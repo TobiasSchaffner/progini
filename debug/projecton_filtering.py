@@ -3,7 +3,6 @@ import picamera.array
 import time
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
 
 # Camera resolution
 res_width=1280
@@ -16,9 +15,8 @@ y_off=0
 width=680
 height=340
 
-# The color bounds for filtering reflections
-lower_color_bounds = np.array([0, 1, 1])
-upper_color_bounds = np.array([255,255,255])
+# Treshhold for reflections
+tresh=15
 
 def init_camera(camera):
     """ Initialize the camera """
@@ -47,10 +45,8 @@ def main():
             # Substract to get the difference
             img_neg = cv2.subtract(img1, img2)
 
-            # Mask to filter small color changes by reflections
-            hsv = cv2.cvtColor(img_neg, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(img_neg, lower_color_bounds, upper_color_bounds)
-            filtered_neg = cv2.bitwise_and(img_neg, img_neg, mask=mask)
+            # Filter reflections with treshhold
+            ret, filtered_neg = cv2.threshold(img_neg,tresh,255,cv2.THRESH_TOZERO)
 
             # Get the positive from the negative
             img = cv2.bitwise_not(filtered_neg)
