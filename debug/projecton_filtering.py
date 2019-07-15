@@ -18,6 +18,8 @@ height=340
 # Treshhold for reflections
 tresh=15
 
+object_detected = False
+
 def init_camera(camera):
     """ Initialize the camera """
     camera.resolution = (res_width, res_height)
@@ -32,21 +34,22 @@ def take_picture(camera):
     return cap.array[y_off:y_off+height, x_off:x_off+width]
 
 def main():
+    cv2.namedWindow('imageWindow', cv2.WINDOW_AUTOSIZE)
     with picamera.PiCamera() as camera:
         init_camera(camera)
-        img1 = take_picture(camera)
+        img_old = take_picture(camera)
         while True:
             # Loop delay
             time.sleep(0.5)
 
             # Take new picture
-            img2 = take_picture(camera)
+            img_new = take_picture(camera)
 
             # Substract to get the difference
-            img_neg = cv2.subtract(img1, img2)
+            img_neg = cv2.subtract(img_old, img_new)
 
             # Filter reflections with treshhold
-            ret, filtered_neg = cv2.threshold(img_neg,tresh,255,cv2.THRESH_TOZERO)
+            _, filtered_neg = cv2.threshold(img_neg,tresh,255,cv2.THRESH_TOZERO)
 
             # Get the positive from the negative
             img = cv2.bitwise_not(filtered_neg)
@@ -54,15 +57,22 @@ def main():
             # Get sum of differing pixels
             img_delta = np.sum(filtered_neg)
             print(img_delta)
-    
-            # If there is a large difference
-            if img_delta > 1000000:
-                # There was a big change in the area of interest
-                cv2.namedWindow('imageWindow', cv2.WINDOW_AUTOSIZE)
-                cv2.imshow('imageWindow',img)
-                cv2.waitKey(0)
-    
-            # The new picture becomes the old picture
-            img1 = img2
+
+            # There was a big change in the area of interest
+            cv2.imshow('imageWindow',img)
+            cv2.waitKey(1)
+
+            # If there is a large difference there is something in the area.
+            # In this case keep the old image.
+            # if there is nothing in the area use the new image on next iteration.
+            if img_delta < 1000000:
+                img_old = img_new
+                if object_detected:
+                    print("Object lost!")
+                    object_detected = False
+            else:
+                if not object_detected:
+                    print("Object detected!")
+                    object_detected = True
 
 main()
