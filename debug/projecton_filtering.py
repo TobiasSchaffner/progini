@@ -16,9 +16,7 @@ width=680
 height=340
 
 # Treshhold for reflections
-tresh=15
-
-object_detected = False
+tresh=30
 
 def init_camera(camera):
     """ Initialize the camera """
@@ -34,39 +32,30 @@ def take_picture(camera):
     return cap.array[y_off:y_off+height, x_off:x_off+width]
 
 def main():
+    object_detected = False
     cv2.namedWindow('imageWindow', cv2.WINDOW_AUTOSIZE)
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
         while True:
-            # Loop delay
-            time.sleep(0.5)
-
             # Take new picture
             img_new = take_picture(camera)
 
             # Substract to get the difference
             img_neg = cv2.subtract(img_old, img_new)
+            drawable_img = cv2.bitwise_not(img_neg)
 
             # Filter reflections with treshhold
             _, filtered_neg = cv2.threshold(img_neg,tresh,255,cv2.THRESH_TOZERO)
-
-            # Get the positive from the negative
-            img = cv2.bitwise_not(filtered_neg)
 
             # Get sum of differing pixels
             img_delta = np.sum(filtered_neg)
             print(img_delta)
 
-            # There was a big change in the area of interest
-            cv2.imshow('imageWindow',img)
-            cv2.waitKey(1)
-
             # If there is a large difference there is something in the area.
             # In this case keep the old image.
             # if there is nothing in the area use the new image on next iteration.
-            if img_delta < 1000000:
-                img_old = img_new
+            if img_delta < 300000:
                 if object_detected:
                     print("Object lost!")
                     object_detected = False
@@ -74,5 +63,37 @@ def main():
                 if not object_detected:
                     print("Object detected!")
                     object_detected = True
+
+            if object_detected:
+                # Get the biggest contour on the screen
+                grey_img = cv2.cvtColor(filtered_neg, cv2.COLOR_BGR2GRAY)
+                _img, contours, _hierarchy = cv2.findContours(grey_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                biggest_contour = max(contours, key = cv2.contourArea)
+
+                # Get the extrem points of the biggest contour.
+                left = tuple(biggest_contour[biggest_contour[:, :, 0].argmin()][0])
+                right = tuple(biggest_contour[biggest_contour[:, :, 0].argmax()][0])
+                top = tuple(biggest_contour[biggest_contour[:, :, 1].argmin()][0])
+                bot = tuple(biggest_contour[biggest_contour[:, :, 1].argmax()][0])
+
+                # Assume that the fingertip is on the opposite of the side the hand enters the area of interest.
+                fingertip = None
+                if (bot[1] == height - 1):
+                    fingertip = top
+                elif (left[0] == 0):
+                    fingertip = right
+                elif (right[0] == width - 1):
+                    fingertip = left
+                elif (top[1] == 0):
+                    fingertip = bot
+
+                # Draw a circle at the point of the fingertip
+                cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
+
+            else:
+                img_old = img_new
+
+            cv2.imshow('imageWindow', drawable_img)
+            cv2.waitKey(1)
 
 main()
