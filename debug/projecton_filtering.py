@@ -3,6 +3,7 @@ import picamera.array
 import time
 import cv2
 import numpy as np
+import mss
 
 # Camera resolution
 res_width=1280
@@ -37,9 +38,19 @@ def main():
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
+        index = 0
         while True:
+            with mss.mss() as sct:
+                mon = sct.monitors[1]
+                screenshot = np.array(sct.grab(mon))
+                screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+                cv2.imwrite('screen/screenshot-{}.png'.format(index),screenshot) 
+            
             # Take new picture
             img_new = take_picture(camera)
+            cv2.imwrite('cam/camera-{}.png'.format(index), img_new)
+            index = index + 1
+
 
             # Substract to get the difference
             img_neg = cv2.subtract(img_old, img_new)
@@ -93,7 +104,7 @@ def main():
             else:
                 img_old = img_new
 
-            cv2.imshow('imageWindow', drawable_img)
+            # cv2.imshow('imageWindow', drawable_img)
             cv2.waitKey(1)
 
 main()
