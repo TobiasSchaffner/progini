@@ -61,7 +61,7 @@ function showVanishWarning(id) {
     const box = $('.box[data-id=' + id + ']');
     box.addClass("vanishing");
     const timeoutId = setTimeout(function () {
-        //destroyBox(id)
+        destroyBox(id)
     }, 1000);
     box.attr("data-timeout-id", timeoutId);
 }
