@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 import mss
+import pyautogui
 
 # Camera resolution
 res_width=1280
@@ -30,7 +31,14 @@ def take_picture(camera):
     camera.capture(cap,format="bgr")
 
     # We are only interested in the projection area
-    return cap.array[y_off:y_off+height, x_off:x_off+width]
+    result = cap.array[y_off:y_off+height, x_off:x_off+width]
+    return cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+
+def removeBackground(camera):
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    _, camera = cv2.threshold(camera,100,255,cv2.THRESH_BINARY)
+    camera = cv2.erode(camera, kernel, 1)
+    return camera
 
 def main():
     object_detected = False
@@ -40,18 +48,8 @@ def main():
         img_old = take_picture(camera)
         index = 0
         while True:
-            with mss.mss() as sct:
-                mon = sct.monitors[1]
-                screenshot = np.array(sct.grab(mon))
-                screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
-                cv2.imwrite('screen/screenshot-{}.png'.format(index),screenshot) 
-            
-            # Take new picture
-            img_new = take_picture(camera)
-            cv2.imwrite('cam/camera-{}.png'.format(index), img_new)
-            index = index + 1
 
-
+            img_new = removeBackground(take_picture(camera))
             # Substract to get the difference
             img_neg = cv2.subtract(img_old, img_new)
             drawable_img = cv2.bitwise_not(img_neg)
@@ -100,11 +98,13 @@ def main():
 
                 # Draw a circle at the point of the fingertip
                 cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
+                scaled_fingertip = (int(fingertip[0] / width * 1280), int(fingertip[1] / height * 720))
 
+                pyautogui.moveTo(scaled_fingertip[0], scaled_fingertip[1])
             else:
                 img_old = img_new
 
             # cv2.imshow('imageWindow', drawable_img)
-            cv2.waitKey(1)
+            # cv2.waitKey(1)
 
 main()
