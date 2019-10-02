@@ -75,8 +75,7 @@ def main():
 
             if object_detected:
                 # Get the biggest contour on the screen
-                grey_img = cv2.cvtColor(filtered_neg, cv2.COLOR_BGR2GRAY)
-                _img, contours, _hierarchy = cv2.findContours(grey_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                _img, contours, _hierarchy = cv2.findContours(filtered_neg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                 biggest_contour = max(contours, key = cv2.contourArea)
 
                 # Get the extrem points of the biggest contour.
