@@ -95,11 +95,12 @@ def main():
                 elif (top[1] == 0):
                     fingertip = bot
 
-                # Draw a circle at the point of the fingertip
-                cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
-                scaled_fingertip = (int(fingertip[0] / width * 1280), int(fingertip[1] / height * 720))
+                if fingertip is not None:
+                    # Draw a circle at the point of the fingertip
+                    cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
+                    scaled_fingertip = (int(fingertip[0] / width * 1280), int(fingertip[1] / height * 720))
 
-                pyautogui.moveTo(scaled_fingertip[0], scaled_fingertip[1])
+                    pyautogui.moveTo(scaled_fingertip[0], scaled_fingertip[1])
             else:
                 img_old = img_new
 
