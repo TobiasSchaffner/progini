@@ -4,20 +4,17 @@ A small projected interface implementation.
 
 This project is using the Lantern Hardware (https://nordprojects.co/lantern/) with a typical raspbian setup as Android Things was discontinued.
 
-Prerequisites:
-* You will have to install opencv to use it.
 
-At the moment there is only a small debug script that gives an insight on how to work with the setup.
-You can connect to the Device via ssh -X to get a debug gui.
+## Finger tracking
 
-After starting the script the device is ready when you see numbers running down the terminal.
-These numbers are an indicator on how much changed in the current picture.
+Take a look in the folder [finger-control](https://github.com/TobiasSchaffner/progini/tree/master/finger-control) to take a look at the mouse-finger-control.
 
-If you move your hand into the projection to point to a certain place the hand will be filtered:
-![projection](images/projection.jpeg)
+## Apps
 
-As a result you will see the clean hand as output.
-![result](images/result.jpeg)
+A few apps / games which are using the finger input to display ui or let you play a game.
 
-This is used for further processing e.g. The position the hand is pointing to.
-The detected position the hand is pointing to is shown by a green dot in the current implementation.
+:arrow_right: [apps](https://github.com/TobiasSchaffner/progini/tree/master/apps) :arrow_left:
+
+## Presentation
+
+Since this project is THE project for the Hacktoberfest 2019 Meetup in Munich you can also find the presentation [here](https://github.com/TobiasSchaffner/progini/tree/master/presentation/).
