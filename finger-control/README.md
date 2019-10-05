@@ -1,11 +1,11 @@
 # Progini - Finger Control
 
-This python script take the input from the lantern camera and moves the mouse cursor to the tip of your finger.
+This python script takes the input from the lantern camera and moves the mouse cursor to the tip of your finger.
 Most of the time...
 
 ## Requirements
 
-* `python3 python3-pip python3-tk python3-dev python3-opencv` installed 
+* `python3 python3-pip python3-tk python3-dev python3-opencv scrot` installed
 * PiP Packages declared in requirements.txt (`pip install -r requirements.txt`)
 
 # Run it
