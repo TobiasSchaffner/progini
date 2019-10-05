@@ -3,6 +3,8 @@ import picamera.array
 import time
 import cv2
 import numpy as np
+import mss
+import pyautogui
 
 # Camera resolution
 res_width=1280
@@ -29,7 +31,14 @@ def take_picture(camera):
     camera.capture(cap,format="bgr")
 
     # We are only interested in the projection area
-    return cap.array[y_off:y_off+height, x_off:x_off+width]
+    result = cap.array[y_off:y_off+height, x_off:x_off+width]
+    return cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+
+def removeBackground(camera):
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    _, camera = cv2.threshold(camera,100,255,cv2.THRESH_BINARY)
+    camera = cv2.erode(camera, kernel, 1)
+    return camera
 
 def main():
     object_detected = False
@@ -37,10 +46,10 @@ def main():
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
+        index = 0
         while True:
-            # Take new picture
-            img_new = take_picture(camera)
 
+            img_new = removeBackground(take_picture(camera))
             # Substract to get the difference
             img_neg = cv2.subtract(img_old, img_new)
             drawable_img = cv2.bitwise_not(img_neg)
@@ -66,8 +75,7 @@ def main():
 
             if object_detected:
                 # Get the biggest contour on the screen
-                grey_img = cv2.cvtColor(filtered_neg, cv2.COLOR_BGR2GRAY)
-                _img, contours, _hierarchy = cv2.findContours(grey_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                _img, contours, _hierarchy = cv2.findContours(filtered_neg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
                 biggest_contour = max(contours, key = cv2.contourArea)
 
                 # Get the extrem points of the biggest contour.
@@ -87,13 +95,13 @@ def main():
                 elif (top[1] == 0):
                     fingertip = bot
 
-                # Draw a circle at the point of the fingertip
-                cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
+                if fingertip is not None:
+                    # Draw a circle at the point of the fingertip
+                    cv2.circle(drawable_img, fingertip, 8, (0, 255, 0), -1)
+                    scaled_fingertip = (int(fingertip[0] / width * 1280), int(fingertip[1] / height * 720))
 
+                    pyautogui.moveTo(scaled_fingertip[0], scaled_fingertip[1])
             else:
                 img_old = img_new
-
-            cv2.imshow('imageWindow', drawable_img)
-            cv2.waitKey(1)
 
 main()
