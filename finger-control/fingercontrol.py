@@ -140,7 +140,7 @@ def main():
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
-        index = 0
+        iteration = 0
         while True:
             img_new = removeBackground(take_picture(camera))
 
