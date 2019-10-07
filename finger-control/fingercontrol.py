@@ -138,7 +138,6 @@ def main():
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
-        iteration = 0
         while True:
             img_new = removeBackground(take_picture(camera))
 
@@ -160,6 +159,7 @@ def main():
             iteration = iteration + 1
 
 
+iteration = 0
 debug = startedInDebugMode()
 if debug:
     folderDebugImages = createDebugFolder()
