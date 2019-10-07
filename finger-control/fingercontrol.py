@@ -158,8 +158,6 @@ def main():
                     if debug: outputDebugImage('threshold_img', threshold_img)
 
                     clickAt(scalePositionToScreen(fingertip))
-            else:
-                img_old = img_new
-
+            img_old = img_new
             iteration = iteration + 1
 main()
