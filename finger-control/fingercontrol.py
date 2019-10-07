@@ -127,7 +127,8 @@ def startedInDebugMode():
     return False
 
 def createDebugFolder():
-    folderDebugImages = 'debug_images_{}'.format(datetime.datetime.now().time())
+    timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
+    folderDebugImages = 'debug_images_{}'.format(timeString)
     os.mkdir(folderDebugImages)
 
 def outputDebugImage(name, image):
