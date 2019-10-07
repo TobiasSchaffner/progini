@@ -132,6 +132,7 @@ def createDebugFolder():
     return folderDebugImages
 
 def outputDebugImage(name, image):
+    global iteration
     cv2.imwrite('{}/{}_{}.png'.format(folderDebugImages, name, iteration), image)
 
 def main():
@@ -156,10 +157,9 @@ def main():
 
                     clickAt(scalePositionToScreen(fingertip))
             img_old = img_new
+            global iteration
             iteration = iteration + 1
 
-
-iteration = 0
 debug = startedInDebugMode()
 if debug:
     folderDebugImages = createDebugFolder()
