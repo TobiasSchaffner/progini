@@ -68,17 +68,19 @@ function showVanishWarning(id) {
 
 function destroyBox(id) {
     const box = $('.box[data-id=' + id + ']');
+    box.off('click');
     box.removeClass("vanishing");
+    box.removeClass("clicked");
     box.addClass("vanish");
-    box.one('animationend', function (e) {
+    box.on('animationend', function (e) {
         box.remove();
     });
 }
 
-function clickBox(id, timeoutId) {
-    clearTimeout(timeoutId);
-    destroyBox(id);
+function clickBox(id) {
+    const box = $('.box[data-id=' + id + ']');
+    box.removeClass("vanishing");
+    box.addClass("clicked");
+    box.off('click');
     userScore++;
 }
-
-
