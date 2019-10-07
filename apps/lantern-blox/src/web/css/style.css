@@ -19,6 +19,7 @@ html, body {
     transform-origin: center;
     animation-duration: 0.5s;
     animation-name: swirl-in;
+    margin: 30px;
 }
 
 .box.vanishing {
