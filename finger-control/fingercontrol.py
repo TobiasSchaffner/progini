@@ -131,7 +131,7 @@ def createDebugFolder():
     os.mkdir(folderDebugImages)
 
 def outputDebugImage(name, image):
-    cv2.imwrite('{}/{}_{}'.format(folderDebugImages, name, iteration), image)
+    cv2.imwrite('{}/{}_{}.png'.format(folderDebugImages, name, iteration), image)
 
 def main():
     debug = startedInDebugMode()
