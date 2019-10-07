@@ -158,6 +158,7 @@ def main():
                     if debug: outputDebugImage('threshold_img', threshold_img)
 
                     moveMouseTo(scalePositionToScreen(fingertip))
+                    clickAt(fingertip)
             else:
                 img_old = img_new
 
