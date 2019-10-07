@@ -12,7 +12,6 @@ import time
 # enable debug output
 debug=False
 debugSwitches = ['-v', 'debug', '--verbose', 'DEBUG']
-folderDebugImages = None
 
 # Camera resolution
 res_width=1280
@@ -130,14 +129,12 @@ def createDebugFolder():
     timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
     folderDebugImages = 'debug_images_{}'.format(timeString)
     os.mkdir(folderDebugImages)
+    return folderDebugImages
 
 def outputDebugImage(name, image):
     cv2.imwrite('{}/{}_{}.png'.format(folderDebugImages, name, iteration), image)
 
 def main():
-    debug = startedInDebugMode()
-    if debug: createDebugFolder()
-
     with picamera.PiCamera() as camera:
         init_camera(camera)
         img_old = take_picture(camera)
@@ -161,4 +158,10 @@ def main():
                     clickAt(scalePositionToScreen(fingertip))
             img_old = img_new
             iteration = iteration + 1
+
+
+debug = startedInDebugMode()
+if debug:
+    folderDebugImages = createDebugFolder()
+
 main()
