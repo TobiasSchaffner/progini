@@ -128,3 +128,7 @@ a {
 tt {
     font-family: Monaco, monospace;
 }
+
+#algorithm-id img:nth-child(2) {
+    clear: none;
+}

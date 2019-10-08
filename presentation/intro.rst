@@ -88,7 +88,7 @@ Your Progress: https://hacktoberfest.digitalocean.com/profile
 :data-x: r2400
 :data-y: 0
 
-.. image:: images/dummy.png
+.. image:: images/lantern.jpg
 
 Project Lantern
 ---------------
@@ -98,10 +98,11 @@ Codename: progini
 
 ----
 
+:id: algorithm-id
 :data-x: r0
 :data-y: r1000
 
-.. image:: images/dummy.png
+.. image:: images/finger-track.jpg
 
 Finger-Tracking
 ---------------
@@ -112,20 +113,17 @@ Finger-Tracking
 
 ----
 
-.. image:: images/dummy.png
-.. image:: images/dummy.png
-.. image:: images/dummy.png
-.. image:: images/dummy.png
+.. image:: images/images.png
 
 How does it work
 ----------------
 
 1. Take a grayscale image
-* Apply a threshold and erosion
-* Detect Motion by comparing with previous image
-* On Motion search for the bigest contour
-* Take the point with the biggest distance to the sides
-* Move the mouse pointer there
+2. Apply erosion
+3. Detect Motion by comparing with previous image
+4. On Motion search for the bigest contour
+5. Take the point with the biggest distance to the sides
+6. Move the mouse pointer there
 
 
 ----
@@ -133,7 +131,7 @@ How does it work
 :data-x: r2400
 :data-y: 0
 
-.. image:: images/dummy.png
+.. image:: images/blox.png
 
 Lantern-Blox
 ------------
@@ -145,7 +143,7 @@ Lantern-Blox
 
 ----
 
-.. image:: images/dummy.png
+.. image:: images/develop.png
 
 Now is your turn
 ----------------
@@ -167,6 +165,12 @@ https://github.com/hacktoberfestmunich/progini
 
 
 ----
+
+.. image:: images/lanter-live.jpg
+   :width: 300px
+.. image:: images/pi.png
+   :width: 300px
+
 
 Testing ?
 ---------
