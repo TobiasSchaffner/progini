@@ -79,10 +79,10 @@ class FileCamera(Camera):
 
 class CameraFactory:
     @staticmethod
-    def create(source):
+    def create(source, folder = FOLDER, file_name = FILE_NAME):
         if source == 'camera':
             return PiCamera(RESOLUTION_WITH, RESOLUTION_HEIGHT)
         elif source == 'file':
-            return FileCamera(FOLDER, FILE_NAME)
+            return FileCamera(folder, file_name)
         else:
             raise LookupError('No matching object found')
