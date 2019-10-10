@@ -44,7 +44,7 @@ if pi_camera_available:
             time.sleep(3)
 
         def take_picture(self, _):
-            picture = picamera.array.PiRGBArray(camera)
+            picture = picamera.array.PiRGBArray(self.camera)
             self.camera.capture(picture, format="bgr")
             return picture.array
 
