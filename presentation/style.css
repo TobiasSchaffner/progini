@@ -1,0 +1,134 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    font-family: 'Roboto', sans-serif;
+    text-shadow: 0px 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+html {
+    background-image: url('images/left-top.png');
+    background-repeat: no-repeat;
+    background-color: #152347;
+}
+
+body::after {
+    content: url('images/right-bottom.png');
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    overflow: visible;
+    z-index: -100;
+    height: 500px
+}
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  color: #FCFCFC;
+  text-shadow: 0 2px 2px #737373;
+  letter-spacing: -1px;
+  padding: 1rem;
+}
+
+li {
+    color: #FCFCFC;
+}
+
+h1 {
+    font-size: 4.5em;
+    color: #FCFCFC;
+    text-shadow: 0 2px 2px #737373;
+    margin: auto;
+}
+
+h2 {
+    font-size: 3em;
+    color: #FCFCFC;
+    text-shadow: 0 1px 1px #737373;
+    padding: 0.5rem;
+}
+
+h3 {
+    font-size: 2.3rem;
+}
+
+h4 {
+    font-size: 2rem;
+}
+
+p {
+    font-size: 1.7rem;
+}
+
+ul,ol,dl {
+  font-size: 1.5rem;
+}
+
+li {
+    margin-bottom: .2ex;
+}
+
+li > ul {
+    margin-bottom: .5ex;
+}
+
+img {
+    border-radius: 2px;
+    margin-right: 2px;
+    margin-left: 2px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.code {
+    background-color: #EDEDED;
+    padding: 1.5rem;
+    border-radius: 2px;
+}
+
+.code > span {
+    background-color: inherit;
+}
+
+.step {
+    width: 1600px;
+}
+
+img {
+    float: right;
+    clear: right;
+    max-width: 45%;
+    margin-left: 16px;
+    vertical-align: middle;
+}
+
+a {
+    color: #D0D0D0;
+}
+
+tt {
+    font-family: Monaco, monospace;
+}
+
+#algorithm-id img:nth-child(2) {
+    clear: none;
+}
