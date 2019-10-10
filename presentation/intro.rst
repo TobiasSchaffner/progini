@@ -156,8 +156,8 @@ Now is your turn
 	* Alternative Mouse-Handling
 	* ...
 
-Sourcecode
-----------
+Source code
+-----------
 
 https://github.com/hacktoberfestmunich/progini
 
@@ -181,4 +181,24 @@ Testing ?
 * Raspberry Pi Simulation
 	* No finger detection
 	* Mouse simulates the finger input
-	* More for performence testing 
+	* More for performance testing
+
+----
+
+Hacking the image processing
+----------------------------
+
+* The finger tracking software does not suite your needs?
+	* No problem, hack it!
+
+* Suggested Workflow
+	* Develope the ui / application you want.
+	* Try it on the lantern.
+	* Does it work?
+		* Fine!
+	* If not:
+		* Enable the debug mode and capture a series of input images from the camera
+		* Now you can feed back the captured images to the finger control software
+* Hint: Read -h of the finger control program
+
+.. image:: images/help_finger_control.png
