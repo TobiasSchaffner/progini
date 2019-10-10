@@ -7,10 +7,7 @@ import pyautogui
 import sys
 import time
 from camera import CameraFactory
-
-# enable debug output
-debug = False
-DEBUG_SWITCHES = ['-v', 'debug', '--verbose', 'DEBUG']
+import argparse
 
 # Screen resolution
 SCREEN_WIDTH=1280
@@ -42,35 +39,41 @@ def clip_projection_area(image):
 
 
 def preprocess_image(image):
+    global args
+
     clipped = clip_projection_area(image)
     grayscale = to_grayscale(clipped)
 
-    if debug: output_debug_image('grayscale_photo', grayscale)
+    if args.debug: write_debug_image('grayscale_photo', grayscale)
 
     return grayscale
 
 
 def remove_background(camera):
+    global args
+
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     _, backgroundRemoved = cv2.threshold(camera, 100, 255, cv2.THRESH_BINARY)
 
-    if debug: output_debug_image('background_removed', backgroundRemoved)
+    if args.debug: write_debug_image('background_removed', backgroundRemoved)
 
     eroded = cv2.erode(camera, kernel, 1)
 
-    if debug: output_debug_image('background_removed_eroded', eroded)
+    if args.debug: write_debug_image('background_removed_eroded', eroded)
 
     return eroded
 
 
 def calc_threshold_image(old_image, new_image):
+    global args
+
     img_neg = cv2.subtract(old_image, new_image)
     drawable_img = cv2.bitwise_not(img_neg)
 
     # Filter reflections with treshhold
     _, filtered_neg = cv2.threshold(img_neg, REFLECTIONS_THRESHOLD, 255, cv2.THRESH_TOZERO)
 
-    if debug: output_debug_image('filtered_neg', filtered_neg)
+    if args.debug: write_debug_image('filtered_neg', filtered_neg)
 
     return filtered_neg
 
@@ -125,37 +128,39 @@ def click_at(position):
     pyautogui.click(position[0], position[1])
 
 
-def started_in_debug_mode():
-    for argument in sys.argv:
-        if argument in DEBUG_SWITCHES:
-            return True
-    return False
+def write_debug_image(name, image):
+    global folder_debug_images
+
+    write_image(folder_debug_images, name, image)
 
 
-def create_debug_folder():
-    timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
-    folderDebugImages = 'debug_images_{}'.format(timeString)
-    os.mkdir(folderDebugImages)
-    return folderDebugImages
+def write_output_image(name, image):
+    global folder_output_images
+
+    write_image(folder_output_images, name, image)
 
 
-def output_debug_image(name, image):
+def write_image(folder, name, image):
     global iteration
-    cv2.imwrite('{}/{}-{}.png'.format(folderDebugImages, name, iteration), image)
+
+    cv2.imwrite('{}/{}-{}.png'.format(folder, name, iteration), image)
 
 
 def main():
-    global iteration
+    global args, iteration
 
-    # TODO implement dry run switch
-    camera = CameraFactory.create('camera')
+    if args.source:
+        camera = CameraFactory.create('file', folder = args.source)
+    else:
+        camera = CameraFactory.create('camera')
+
     with camera:
         camera.initialize()
         img_old = preprocess_image(camera.take_picture(iteration))
         while True:
             original = camera.take_picture(iteration)
 
-            if debug: output_debug_image('original', original)
+            if args.debug: write_debug_image('camera', original)
 
             img_new = remove_background(preprocess_image(original))
 
@@ -170,16 +175,48 @@ def main():
                     # Draw a circle at the point of the fingertip
                     cv2.circle(threshold_img, fingertip, 8, (255, 0, 0), -1)
 
-                    if debug: output_debug_image('threshold_img', threshold_img)
-
-                    click_at(scale_position_to_screen(fingertip))
+                    if args.source:
+                        write_output_image('result', threshold_img)
+                    else:
+                        click_at(scale_position_to_screen(fingertip))
 
             img_old = img_new
             iteration = iteration + 1
 
-folderDebugImages = 'debug_images'
-debug = started_in_debug_mode()
-if debug:
-    folderDebugImages = create_debug_folder()
+
+def create_timestamp_folder(name):
+    timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
+    name = '{}-{}'.format(name, timeString)
+    os.mkdir(name)
+    return name
+
+
+def create_debug_folder():
+    return create_timestamp_folder('debug')
+
+
+def create_output_folder():
+    return create_timestamp_folder('output')
+
+
+parser = argparse.ArgumentParser(
+    description='Finger Control: Observes the finger in front of the projector and moves the mouse accordingly.')
+parser.add_argument(
+    '-v', '--verbose',
+    dest='debug',
+    action='store_true',
+    help='Outputs the intermediate images to simplify troubleshooting. The images can also be used as input for the test run.')
+parser.add_argument(
+    '-s', '--source',
+    dest='source',
+    help='Use a folder with images instead of the camera. This is the suggested way to develope the image processing on your local machine.')
+
+args = parser.parse_args()
+
+if args.source:
+    folder_output_images = create_output_folder()
+
+if args.debug:
+    folder_debug_images = create_debug_folder()
 
 main()
