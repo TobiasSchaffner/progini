@@ -40,7 +40,7 @@ if pi_camera_available:
             self.camera = picamera.PiCamera()
 
         def initialize(self):
-            camera.resolution = (self.resolution_width, self.resolution_height)
+            self.camera.resolution = (self.resolution_width, self.resolution_height)
             time.sleep(3)
 
         def take_picture(self, _):
