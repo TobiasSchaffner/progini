@@ -3,89 +3,94 @@ import datetime
 import mss
 import numpy as np
 import os
-import picamera
-import picamera.array
 import pyautogui
 import sys
 import time
-
-# enable debug output
-debug=False
-debugSwitches = ['-v', 'debug', '--verbose', 'DEBUG']
-
-# Camera resolution
-res_width=1280
-res_height=720
+from camera import CameraFactory
+import argparse
 
 # Screen resolution
-screen_width=1280
-scree_height=720
+SCREEN_WIDTH=1280
+SCREEN_HEIGHT=720
 
 # Definition of area of interest
 # This is set to the area of the projection
-x_off=280
-y_off=0
-width=680
-height=340
+X_OFFSET=280
+Y_OFFSET=0
+WIDTH=680
+HEIGHT=340
 
-# Treshholds
-reflections_tresh=30
-movement_tresh=100000
+# Thresholds
+REFLECTIONS_THRESHOLD=30
+MOVEMENT_THRESH=100000
 
-# Image processing iteration
+# Image processing iteration (for debugging only)
 iteration = 0
 
-def init_camera(camera):
-    camera.resolution = (res_width, res_height)
-    time.sleep(3)
 
-def take_picture(camera):
-    cap = picamera.array.PiRGBArray(camera)
-    camera.capture(cap, format="bgr")
+def to_grayscale(image):
+    result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return result
 
-    # We are only interested in the projection area
-    result = cap.array[y_off:y_off+height, x_off:x_off+width]
-    grayscale_photo = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
 
-    if debug: outputDebugImage('grayscale_photo', grayscale_photo)
+def clip_projection_area(image):
+    result = image[Y_OFFSET : (Y_OFFSET + HEIGHT), X_OFFSET : (X_OFFSET + WIDTH)]
+    return result
 
-    return grayscale_photo
 
-def removeBackground(camera):
+def preprocess_image(image):
+    global args
+
+    clipped = clip_projection_area(image)
+    grayscale = to_grayscale(clipped)
+
+    if args.debug: write_debug_image('grayscale_photo', grayscale)
+
+    return grayscale
+
+
+def remove_background(camera):
+    global args
+
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     _, backgroundRemoved = cv2.threshold(camera, 100, 255, cv2.THRESH_BINARY)
 
-    if debug: outputDebugImage('background_removed', backgroundRemoved)
+    if args.debug: write_debug_image('background_removed', backgroundRemoved)
 
     eroded = cv2.erode(camera, kernel, 1)
 
-    if debug: outputDebugImage('background_removed_eroded', eroded)
+    if args.debug: write_debug_image('background_removed_eroded', eroded)
 
     return eroded
 
-def calcThresholdImage(old_image, new_image):
+
+def calc_threshold_image(old_image, new_image):
+    global args
+
     img_neg = cv2.subtract(old_image, new_image)
     drawable_img = cv2.bitwise_not(img_neg)
 
     # Filter reflections with treshhold
-    _, filtered_neg = cv2.threshold(img_neg, reflections_tresh, 255, cv2.THRESH_TOZERO)
+    _, filtered_neg = cv2.threshold(img_neg, REFLECTIONS_THRESHOLD, 255, cv2.THRESH_TOZERO)
 
-    if debug: outputDebugImage('filtered_neg', filtered_neg)
+    if args.debug: write_debug_image('filtered_neg', filtered_neg)
 
     return filtered_neg
+
 
 def detectMovement(pixel_delta):
     # If there is a large difference there is something in the area.
     # In this case keep the old image.
     # if there is nothing in the area use the new image on next iteration.
-    if pixel_delta < movement_tresh:
+    if pixel_delta < MOVEMENT_THRESH:
         print("Movement stoped!")
         return False
     else:
         print("Movement detected!")
         return True
 
-def determineContourMaximumPoint(image):
+
+def determine_contour_maximum_point(image):
     # Get the biggest contour on the screen
     _img, contours, _hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     biggest_contour = max(contours, key = cv2.contourArea)
@@ -98,70 +103,120 @@ def determineContourMaximumPoint(image):
 
     # Assume that the fingertip is on the opposite of the side the hand enters the area of interest.
     fingertip = None
-    if (bot[1] == height - 1):
+    if (bot[1] == HEIGHT - 1):
         return top
     elif (left[0] == 0):
         return right
-    elif (right[0] == width - 1):
+    elif (right[0] == WIDTH - 1):
         return left
     elif (top[1] == 0):
         return bot
 
-def scalePositionToScreen(cam_position):
-    x = cam_position[0] / width * screen_width
-    y = cam_position[1] / height * scree_height
+
+def scale_position_to_screen(cam_position):
+    x = cam_position[0] / WIDTH * SCREEN_WIDTH
+    y = cam_position[1] / HEIGHT * SCREEN_HEIGHT
 
     return (int(x), int(y))
 
-def moveMouseTo(position):
+
+def move_mouse_to(position):
     pyautogui.moveTo(position[0], position[1])
 
-def clickAt(position):
+
+def click_at(position):
     pyautogui.click(position[0], position[1])
 
-def startedInDebugMode():
-    for argument in sys.argv:
-        if argument in debugSwitches:
-            return True
-    return False
 
-def createDebugFolder():
-    timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
-    folderDebugImages = 'debug_images_{}'.format(timeString)
-    os.mkdir(folderDebugImages)
-    return folderDebugImages
+def write_debug_image(name, image):
+    global folder_debug_images
 
-def outputDebugImage(name, image):
+    write_image(folder_debug_images, name, image)
+
+
+def write_output_image(name, image):
+    global folder_output_images
+
+    write_image(folder_output_images, name, image)
+
+
+def write_image(folder, name, image):
     global iteration
-    cv2.imwrite('{}/{}_{}.png'.format(folderDebugImages, name, iteration), image)
+
+    cv2.imwrite('{}/{}-{}.png'.format(folder, name, iteration), image)
+
 
 def main():
-    with picamera.PiCamera() as camera:
-        init_camera(camera)
-        img_old = take_picture(camera)
-        while True:
-            img_new = removeBackground(take_picture(camera))
+    global args, iteration
 
-            threshold_img = calcThresholdImage(img_old, img_new)
+    if args.source:
+        camera = CameraFactory.create('file', folder = args.source)
+    else:
+        camera = CameraFactory.create('camera')
+
+    with camera:
+        camera.initialize()
+        img_old = preprocess_image(camera.take_picture(iteration))
+        while True:
+            original = camera.take_picture(iteration)
+
+            if args.debug: write_debug_image('camera', original)
+
+            img_new = remove_background(preprocess_image(original))
+
+            threshold_img = calc_threshold_image(img_old, img_new)
             img_delta = np.sum(threshold_img)
             print(img_delta)
 
             if detectMovement(img_delta):
-                fingertip = determineContourMaximumPoint(threshold_img)
+                fingertip = determine_contour_maximum_point(threshold_img)
 
                 if fingertip is not None:
                     # Draw a circle at the point of the fingertip
-                    cv2.circle(threshold_img, fingertip, 8, (0, 255, 0), -1)
+                    cv2.circle(threshold_img, fingertip, 8, (255, 0, 0), -1)
 
-                    if debug: outputDebugImage('threshold_img', threshold_img)
+                    if args.source:
+                        write_output_image('result', threshold_img)
+                    else:
+                        click_at(scale_position_to_screen(fingertip))
 
-                    clickAt(scalePositionToScreen(fingertip))
             img_old = img_new
-            global iteration
             iteration = iteration + 1
 
-debug = startedInDebugMode()
-if debug:
-    folderDebugImages = createDebugFolder()
+
+def create_timestamp_folder(name):
+    timeString = time.strftime("%Y-%m-%d-%H-%M-%S")
+    name = '{}-{}'.format(name, timeString)
+    os.mkdir(name)
+    return name
+
+
+def create_debug_folder():
+    return create_timestamp_folder('debug')
+
+
+def create_output_folder():
+    return create_timestamp_folder('output')
+
+
+parser = argparse.ArgumentParser(
+    description='Finger Control: Observes the finger in front of the projector and moves the mouse accordingly.')
+parser.add_argument(
+    '-v', '--verbose',
+    dest='debug',
+    action='store_true',
+    help='Outputs the intermediate images to simplify troubleshooting. The images can also be used as input for the test run.')
+parser.add_argument(
+    '-s', '--source',
+    dest='source',
+    help='Use a folder with images instead of the camera. This is the suggested way to develope the image processing on your local machine.')
+
+args = parser.parse_args()
+
+if args.source:
+    folder_output_images = create_output_folder()
+
+if args.debug:
+    folder_debug_images = create_debug_folder()
 
 main()
