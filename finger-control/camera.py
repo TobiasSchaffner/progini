@@ -45,14 +45,14 @@ if pi_camera_available:
 
         def take_picture(self, _):
             picture = picamera.array.PiRGBArray(camera)
-            camera.capture(picture, format="bgr")
+            self.camera.capture(picture, format="bgr")
             return picture.array
 
         def __enter__(self):
-            return camera.__enter__()
+            return self.camera.__enter__()
 
         def __exit__(self):
-            camera.__exit__()
+            self.camera.__exit__()
 
 
 class FileCamera(Camera):
