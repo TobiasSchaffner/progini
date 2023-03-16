@@ -1,8 +1,9 @@
 MouseInfo==0.0.4
 mss==4.0.3
-numpy==1.17.2
 opencv-contrib-python==4.2.0.32
-Pillow==6.2.0
+numpy==1.22.0
+opencv-contrib-python==4.1.1.26
+Pillow==9.3.0
 pkg-resources==0.0.0
 PyAutoGUI==0.9.47
 PyGetWindow==0.0.7
